@@ -1,0 +1,21 @@
+{
+    "name": "aviation-analytics-dashboard",
+    "version": "2.3.0",
+    "description": "High-Contrast Aviation Analytics Dashboard for Taiwan Immigration Data",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "keywords": [
+        "aviation",
+        "analytics",
+        "dashboard",
+        "taiwan",
+        "immigration"
+    ],
+    "author": "",
+    "license": "MIT",
+    "engines": {
+        "node": ">=14.0.0"
+    }
+}

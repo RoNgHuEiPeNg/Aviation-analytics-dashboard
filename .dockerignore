@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+Code_Review_Report.md
+Immigration_SRS.md
+.DS_Store

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const API_BASE = 'https://opendata.immigration.gov.tw';
 
 const server = http.createServer((req, res) => {
