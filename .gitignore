@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (if used in future)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Gemini/Antigravity artifacts
+.gemini/
+brain/
+walkthrough.md
+task.md
+implementation_plan.md
+
+# Logs
+*.log

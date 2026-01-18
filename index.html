@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航空人次預報查詢 | 數據戰情中心</title>
+
+    <!-- Tailwind CSS V4 CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Geist:wght@100..900&display=swap"
+        rel="stylesheet">
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Geist', sans-serif;
+        }
+    </style>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            /* slate-50 */
+            color: #0f172a;
+            /* slate-900 */
+            min-height: 100vh;
+            font-family: 'Geist', sans-serif;
+        }
+
+        .glass-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            /* slate-200 */
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ea580c;
+            /* orange-600 */
+            border-radius: 10px;
+        }
+
+        @keyframes stagger-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-stagger-in {
+            animation: stagger-in 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-orange-200 text-xl">
+
+    <div class="max-w-7xl mx-auto px-8 py-16">
+        <!-- Header -->
+        <header class="mb-16 flex flex-col md:flex-row md:items-start justify-between gap-8 animate-stagger-in">
+            <div class="flex-1">
+                <div class="flex items-center gap-4 mb-3">
+                    <span class="w-12 h-[4px] bg-orange-600"></span>
+                    <span class="text-orange-600 font-display font-black tracking-[0.2em] text-base uppercase">Ops
+                        Center Global Feed</span>
+                </div>
+                <h1 class="text-6xl md:text-7xl font-display font-extrabold text-slate-900 tracking-tight">
+                    Immigration <span class="text-orange-600">Analytics</span>
+                </h1>
+                <p class="mt-6 text-2xl text-slate-700 max-w-2xl leading-relaxed font-medium">
+                    提供即時全台機場與港口之人次預處理分析。基於內政部移民署 Open Data 數據流。
+                </p>
+            </div>
+
+            <div class="text-right hidden md:block">
+                <div class="text-sm text-slate-700 font-mono font-black tracking-widest mb-1">SYSTEM STATUS: OPTIMAL
+                </div>
+                <div class="text-base text-emerald-600 font-mono font-black uppercase">Real-Time Data Active ●</div>
+            </div>
+        </header>
+
+        <!-- Main Query Section -->
+        <main class="space-y-12">
+            <section class="glass-panel p-10 rounded-3xl animate-stagger-in" style="animation-delay: 100ms;">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-end">
+                    <div class="md:col-span-3">
+                        <label for="location-select"
+                            class="block text-sm font-black text-slate-800 uppercase tracking-[0.22em] mb-4">
+                            Select Departure or Arrival Point
+                        </label>
+                        <select id="location-select"
+                            class="w-full bg-white border-2 border-slate-300 rounded-xl px-6 py-5 text-2xl text-slate-900 focus:ring-4 focus:ring-orange-200 focus:border-orange-500 transition-all outline-none appearance-none cursor-pointer font-bold shadow-sm">
+                            <option value="">-- 請選擇機場或港口 --</option>
+                            <!-- Options injected via JS -->
+                        </select>
+                    </div>
+                    <button id="search-btn"
+                        class="w-full bg-orange-600 hover:bg-orange-700 text-white font-display font-black py-6 px-8 rounded-xl text-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-orange-600/30">
+                        執行查詢
+                    </button>
+                </div>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="hidden space-y-10 animate-stagger-in"
+                style="animation-delay: 200ms;">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-10 rounded-3xl relative overflow-hidden group bg-white">
+                        <label
+                            class="block text-sm font-black text-slate-600 uppercase tracking-[0.2em] mb-4">預報總人數</label>
+                        <div class="text-7xl font-display font-black text-orange-600 leading-none" id="kpi-total-pax">
+                            0</div>
+                        <div class="mt-4 text-sm text-slate-700 font-mono font-bold tracking-tighter">LIVE AGGREGATION
+                            ENGINE</div>
+                    </div>
+                    <div class="glass-panel p-10 rounded-3xl bg-white">
+                        <label
+                            class="block text-sm font-black text-slate-600 uppercase tracking-[0.2em] mb-4">主要來源國</label>
+                        <div class="text-7xl font-display font-black text-slate-900 leading-none" id="kpi-top-nat">-
+                        </div>
+                        <div class="mt-4 text-sm text-slate-700 font-mono font-bold tracking-tighter">PRIMARY
+                            NATIONALITY STATS</div>
+                    </div>
+                    <div class="glass-panel p-10 rounded-3xl bg-white">
+                        <label
+                            class="block text-sm font-black text-slate-600 uppercase tracking-[0.2em] mb-4">負荷最重區域</label>
+                        <div class="text-7xl font-display font-black text-slate-900 leading-none" id="kpi-top-term">-
+                        </div>
+                        <div class="mt-4 text-sm text-slate-700 font-mono font-bold tracking-tighter">LOAD STATUS:
+                            ACTIVE MONITOR</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="glass-panel p-10 rounded-3xl bg-white">
+                        <h3
+                            class="font-display font-black text-slate-900 text-lg uppercase tracking-[0.2em] mb-12 border-b-2 border-slate-100 pb-5">
+                            國籍分佈排名</h3>
+                        <div id="nat-distribution" class="space-y-10">
+                            <!-- Bars injected via JS -->
+                        </div>
+                    </div>
+                    <div class="glass-panel p-10 rounded-3xl bg-white">
+                        <h3
+                            class="font-display font-black text-slate-900 text-lg uppercase tracking-[0.2em] mb-12 border-b-2 border-slate-100 pb-5">
+                            年齡層統計</h3>
+                        <div id="age-distribution" class="space-y-10">
+                            <!-- Bars injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-container animate-stagger-in" style="animation-delay: 300ms;">
+                <div id="loading" class="hidden py-24 text-center">
+                    <div
+                        class="inline-block w-16 h-16 border-8 border-orange-200 border-t-orange-600 rounded-full animate-spin mb-6">
+                    </div>
+                    <p class="text-orange-600 font-mono text-xl font-black animate-pulse uppercase">Synchronizing
+                        High-Priority Feed...</p>
+                </div>
+
+                <!-- Initialization Loading Progress -->
+                <div id="init-loading" class="hidden py-16 text-center">
+                    <div class="max-w-md mx-auto">
+                        <div class="flex items-center justify-center gap-4 mb-6">
+                            <div
+                                class="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin">
+                            </div>
+                            <span class="text-slate-900 font-display font-black text-xl">系統初始化中</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-200 rounded-full overflow-hidden mb-4">
+                            <div id="init-progress"
+                                class="h-full bg-orange-600 rounded-full transition-all duration-300" style="width: 0%">
+                            </div>
+                        </div>
+                        <p id="init-progress-text" class="text-slate-600 font-mono text-sm font-bold">正在檢查可用資料... (0/44)
+                        </p>
+                    </div>
+                </div>
+
+                <div id="empty-state"
+                    class="glass-panel p-24 rounded-3xl text-center border-dashed border-2 border-slate-300 bg-white/50">
+                    <svg class="w-24 h-24 text-slate-500 mx-auto mb-8" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    <p class="text-slate-700 font-bold text-2xl font-display">請選擇機場或港口後點擊「執行查詢」</p>
+                </div>
+
+                <div id="results-meta" class="hidden items-center justify-between mb-8 px-4">
+                    <div class="text-sm font-black text-slate-700 uppercase tracking-[0.25em]">
+                        Feed Monitor: <span id="current-query" class="text-orange-600 ml-4 font-black">---</span>
+                    </div>
+                    <div id="data-count"
+                        class="text-sm bg-slate-900 text-white px-6 py-2 rounded-full font-mono font-black shadow-lg">0
+                        ENTRIES FOUND</div>
+                </div>
+
+                <div
+                    class="glass-panel rounded-3xl overflow-hidden shadow-2xl overflow-x-auto custom-scrollbar bg-white">
+                    <table class="w-full text-left text-lg whitespace-nowrap">
+                        <thead class="bg-slate-100 border-b-2 border-slate-200">
+                            <tr>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm">
+                                    航廈/港口</th>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm">
+                                    詳細地點</th>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm">
+                                    性別</th>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm">
+                                    年齡層</th>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm">
+                                    國籍</th>
+                                <th
+                                    class="px-8 py-6 font-display font-black text-slate-900 uppercase tracking-widest text-sm text-right">
+                                    預報人數</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100">
+                            <!-- Rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer
+            class="mt-32 pt-12 border-t-2 border-slate-200 flex flex-col md:flex-row justify-between gap-10 items-center text-sm text-slate-700 uppercase tracking-[0.3em] font-mono font-black">
+            <div>&copy; 2026 Aviation Analytics Hub / High-Contrast Edition</div>
+            <div class="flex gap-12">
+                <a href="#"
+                    class="hover:text-orange-600 transition-colors underline decoration-2 underline-offset-8">Protocol</a>
+                <a href="#"
+                    class="hover:text-orange-600 transition-colors underline decoration-2 underline-offset-8">Endpoint</a>
+                <a href="#"
+                    class="hover:text-orange-600 transition-colors underline decoration-2 underline-offset-8">Legal
+                    Cache</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
